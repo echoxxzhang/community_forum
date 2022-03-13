@@ -6,17 +6,13 @@ import org.apache.ibatis.annotations.*;
 @Mapper
 public interface LoginTicketMapper {
 
-    @Insert({
-            "insert into login_ticket(user_id,ticket,status,expired) ",
-            "values(#{userId},#{ticket},#{status},#{expired})"
-    })
+    @Insert({"insert into login_ticket(user_id,ticket,status,expired) ",
+            "values(#{userId},#{ticket},#{status},#{expired})"})
     @Options(keyProperty = "id", useGeneratedKeys = true)
     int insertLoginTicket(LoginTicket loginTicket);
 
-    @Select({
-            "select id,user_id,ticket,status,expired ",
-            "from login_ticket where ticket=#{ticket}"
-    })
+    @Select({"select id,user_id,ticket,status,expired ",
+            "from login_ticket where ticket=#{ticket}"})
     LoginTicket selectByTicket(String ticket);
 
     @Update({

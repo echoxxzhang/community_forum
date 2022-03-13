@@ -2,9 +2,11 @@ package com.echoxxzhang;
 
 import com.echoxxzhang.dao.DiscussPostMapper;
 import com.echoxxzhang.dao.LoginTicketMapper;
+import com.echoxxzhang.dao.MessageMapper;
 import com.echoxxzhang.dao.UserMapper;
 import com.echoxxzhang.entity.DiscussPost;
 import com.echoxxzhang.entity.LoginTicket;
+import com.echoxxzhang.entity.Message;
 import com.echoxxzhang.entity.User;
 import com.echoxxzhang.service.DiscussPostService;
 import com.echoxxzhang.util.HostHolder;
@@ -35,6 +37,10 @@ public class MapperTests {
     // test
     @Autowired
     private DiscussPostService discussPostService;
+
+    @Autowired
+    private MessageMapper messageMapper;
+
 
 
     @Test
@@ -125,4 +131,28 @@ public class MapperTests {
         discussPostService.addDiscussPost(post);
 
     }
+
+    @Test
+    public void testSelectLetters() {
+        List<Message> list = messageMapper.selectConversations(111, 0, 20);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+
+        int count = messageMapper.selectConversationCount(111);
+        System.out.println(count);
+
+        list = messageMapper.selectLetters("111_112", 0, 10);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+
+        count = messageMapper.selectLetterCount("111_112");
+        System.out.println(count);
+
+        count = messageMapper.selectLetterUnreadCount(131, "111_131");
+        System.out.println(count);
+
+    }
+
 }
