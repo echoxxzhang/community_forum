@@ -54,12 +54,8 @@ public class HomeController {
         return "/index";
     }
 
-    @RequestMapping("/test")
-    public String getIndexPage(ModelMap map) {
-        // 加入一个属性，用来在模板中读取
-        map.addAttribute("host", "http://blog.didispace.com");
-
-        // return模板文件的名称，对应src/main/resources/templates/index.html
-        return "test";
+    @RequestMapping(path = "/error", method = RequestMethod.GET)
+    public String getErrorPage() {
+        return "/error/500";
     }
 }

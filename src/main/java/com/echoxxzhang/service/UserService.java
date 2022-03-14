@@ -216,4 +216,9 @@ public class UserService {
         return userMapper.updatePassword(userId, passwd);
     }
 
+
+    public User findUserByName(String username) {
+        return userMapper.selectByName(username);
+    }
+
 }
