@@ -4,11 +4,12 @@ import com.echoxxzhang.entity.DiscussPost;
 import com.echoxxzhang.entity.Page;
 import com.echoxxzhang.entity.User;
 import com.echoxxzhang.service.DiscussPostService;
+import com.echoxxzhang.service.LikeService;
 import com.echoxxzhang.service.UserService;
+import com.echoxxzhang.util.CommunityConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -18,13 +19,16 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     /**
      * 访问首页功能
@@ -47,6 +51,9 @@ public class HomeController {
                 map.put("post", post);
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+
+                long entityLikeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", entityLikeCount);
                 discussPosts.add(map);
             }
         }

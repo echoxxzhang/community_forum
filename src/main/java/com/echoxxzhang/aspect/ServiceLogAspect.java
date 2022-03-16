@@ -29,7 +29,7 @@ public class ServiceLogAspect {
      * service方法执行之后打印日志
      * @param joinPoint
      */
-    @Before("pointcut()")  // 引用
+    // @Before("pointcut()")  // 引用
     public void before(JoinPoint joinPoint) {
 
         // 格式：用户[ip地址],在[xxx时间],访问了[xxx方法].
