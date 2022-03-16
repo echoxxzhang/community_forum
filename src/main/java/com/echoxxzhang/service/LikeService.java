@@ -29,7 +29,7 @@ public class LikeService {
                 String entityLikeKey = RedisKeyUtil.getEntityLikeKey(entityType, entityId);
                 String userLikeKey = RedisKeyUtil.getUserLikeKey(entityUserId);
 
-                // 判断userId是否在集合中，如果有，那就是已点赞
+                // 查询userId是否在集合中，如果有，那就是已点赞
                 boolean isMember = operations.opsForSet().isMember(entityLikeKey, userId);
 
                 operations.multi(); // 开启事务
