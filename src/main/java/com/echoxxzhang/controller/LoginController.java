@@ -2,12 +2,15 @@ package com.echoxxzhang.controller;
 
 import com.echoxxzhang.entity.User;
 import com.echoxxzhang.service.UserService;
+import com.echoxxzhang.util.CommunityUtil;
+import com.echoxxzhang.util.RedisKeyUtil;
 import com.google.code.kaptcha.Producer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -23,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.echoxxzhang.util.CommunityConstant;
 
@@ -42,6 +46,10 @@ public class LoginController  implements CommunityConstant {
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
 
 
     @RequestMapping(path = "/register", method = RequestMethod.GET)
@@ -104,18 +112,28 @@ public class LoginController  implements CommunityConstant {
 
 
     /**
-     *
+     * 生成验证码
      * @param response 通过response将验证码发送给客户端
-     * @param session 服务端也需要记住该验证码，好与客户端传过来的验证码对比,因为是跨请求的，所以放入session
+     *
      */
     @RequestMapping(path = "/kaptcha", method = RequestMethod.GET)
-    public void getKaptcha(HttpServletResponse response, HttpSession session) {
+    public void getKaptcha(HttpServletResponse response) {
         // 生成验证码
         String text = kaptchaProducer.createText(); // 生成字符串
         BufferedImage image = kaptchaProducer.createImage(text); // 生成图片
 
-        // 将验证码存入session
-        session.setAttribute("kaptcha", text);
+        // 将验证码存入session（废弃）
+
+        // 验证码（交给Redis）
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
+        // 将验证码存入Redis
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner); // 放到redis中存储
+        redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS); // 设置60秒超时时间
+
 
         // 将图片输出给浏览器
         response.setContentType("image/png");
@@ -129,25 +147,28 @@ public class LoginController  implements CommunityConstant {
 
 
     /**
-     * 用户登陆
-     * @param username
-     * @param password
-     * @param code
-     * @param rememberme
-     * @param model
-     * @param session
-     * @param response
-     * @return
+     * 用户登陆,检验验证码、登陆用户密码等
      */
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     public String login(String username, String password, String code, boolean rememberme,
-                        Model model, HttpSession session, HttpServletResponse response) {
-        // 检查验证码
-        String kaptcha = (String) session.getAttribute("kaptcha");
+                        Model model, @CookieValue("kaptchaOwner") String kaptchaOwner, HttpServletResponse response) {
+        // 检查验证码（session，已废弃）
+        // String kaptcha = (String) session.getAttribute("kaptcha");
+//         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
+//            model.addAttribute("codeMsg", "验证码不正确!");
+//            return "/site/login";
+//        }
+        String kaptcha = null;
+        if (StringUtils.isNotBlank(kaptchaOwner)) {
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
+
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
             model.addAttribute("codeMsg", "验证码不正确!");
             return "/site/login";
         }
+
 
         // 检查账号,密码
         int expiredSeconds = rememberme ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
