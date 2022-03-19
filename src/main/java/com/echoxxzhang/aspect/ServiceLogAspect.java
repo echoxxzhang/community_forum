@@ -33,7 +33,9 @@ public class ServiceLogAspect {
 
         // 格式：用户[ip地址],在[xxx时间],访问了[xxx方法].
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        assert attributes != null;
+        if (attributes == null){
+            return;
+        }
         HttpServletRequest request = attributes.getRequest(); // 获取request对象
         String ip = request.getRemoteHost(); // 获取用户IP地址
 
