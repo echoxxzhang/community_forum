@@ -56,7 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Comm
                 )
                 .hasAnyAuthority(AUTHORITY_MODERATOR)
                 .antMatchers(
-                        "discuss/delete"
+                        "discuss/delete",
+                        "/data/**"
                 )
                 .hasAnyAuthority(AUTHORITY_ADMIN)
                 .anyRequest().permitAll() // 除了以上的路径，都允许访问
