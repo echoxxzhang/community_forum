@@ -25,20 +25,20 @@ import java.util.List;
 @ContextConfiguration(classes = DemoApplication.class)
 public class MapperTests {
 
-    @Autowired
+    @Autowired(required = false)
     private UserMapper userMapper;
 
-    @Autowired
+    @Autowired(required = false)
     private DiscussPostMapper discussPostMapper;
 
-    @Autowired
+    @Autowired(required = false)
     private LoginTicketMapper loginTicketMapper;
 
     // test
-    @Autowired
+    @Autowired(required = false)
     private DiscussPostService discussPostService;
 
-    @Autowired
+    @Autowired(required = false)
     private MessageMapper messageMapper;
 
 
@@ -85,7 +85,7 @@ public class MapperTests {
 
     @Test
     public void testSelectPosts() {
-        List<DiscussPost> list = discussPostMapper.selectDiscussPosts(149, 0, 10);
+        List<DiscussPost> list = discussPostMapper.selectDiscussPosts(149, 0, 10,0);
         for(DiscussPost post : list) {
             System.out.println(post);
         }
